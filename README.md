@@ -1,4 +1,4 @@
-# node-config
+# EuNodeConfig
 
 **NOTE, THIS IS A WORK IN PROGRESS AND NOT COMPLETE AT THIS TIME**
 To see what works, look at the test(s).
