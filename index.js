@@ -18,14 +18,43 @@ function mergeConfigs(conf1, conf2) {
 }
 
 function getEnvKey(key) {
-	var result = process.env[key]
+	var result = process.env[key];
 	if(typeof result === "undefined") {
 		result = process.env[changeCase.snakeCase(key).toUpperCase()];
 	}
-	return result
+	return result;
+}
+
+function validateConfig(description, data) {
+  var keys = Object.keys(description);
+  for(var i=0; i < keys.length; i++) {
+    var descr = description[keys[i]];
+    var el = data[keys[i]];
+    if(descr.required) {
+     if(el === null || typeof el === 'undefined') {
+       if(typeof descr.error === 'string') {
+         return new Error(descr.error);
+       } else {
+         return new Error("Missing required config value: " + keys[i]);
+       }
+     }
+    }
+  }
 }
 
 var configLoaders = {
+  "jsonData": function(description, options, callback) {
+    if(typeof options.jsonData === 'undefined') {
+      return callback(null, {});
+    }
+    var data;
+    try {
+      data = JSON.parse(options.jsonData);
+    } catch(ex) {
+      callback("Could not load jsonData: " + ex);
+    }
+    callback(null, data);
+  },
 	"environment": function(description, options, callback) {
 		var result = {};
 		async.each(Object.keys(description), function(key, cb) {
@@ -53,7 +82,7 @@ var configLoaders = {
 			callback(null, result);
 		});
 	},
-}
+};
 
 module.exports.loadConfig = function(description, options, callback) {
 	var keys = Object.keys(description);
@@ -91,7 +120,7 @@ module.exports.loadConfig = function(description, options, callback) {
 	options.configFolders = dirsToTry;
 
 	if(!Array.isArray(options.order)) {
-		options.order = ["environment", "json", "yaml", "defaults"];
+		options.order = ["jsonData", "environment", "json", "yaml", "defaults"];
 	}
 	if(typeof options.filePrefix !== "string") {
 		options.filePrefix = "config";
@@ -99,14 +128,21 @@ module.exports.loadConfig = function(description, options, callback) {
 
 	options.order = options.order.filter(function(ct) { return typeof configLoaders[ct] === 'function'; });
 
-	async.map(options.order, function(el, asyncb) {
-		var fn = configLoaders[el];
-		fn(description, options, asyncb);
-	}, function(err, resultArr) {
-		resultArr.push(defaultConfig);
-		var result = resultArr.reduce(mergeConfigs);
-		deferred.resolve(result);
-	});
+  async.map(options.order, function(el, asyncb) {
+    var fn = configLoaders[el];
+    fn(description, options, asyncb);
+  }, function(err, resultArr) {
+    // TODO, maybe handle this err
+    resultArr.push(defaultConfig);
+    var result = resultArr.reduce(mergeConfigs);
+
+    err = validateConfig(description, result);
+    if(err) {
+      deferred.reject(err);
+    } else {
+      deferred.resolve(result);
+    }
+  });
 
 	return deferred.promise.nodeify(callback);
 };

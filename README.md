@@ -12,28 +12,37 @@ various formats and takes care of parsing the formats appropriately for you.
 This module exports only one function: `loadConfig`.
 
 ```javascript
-var configLoader = require('node-config');
+var configLoader = require('eu-node-config');
 configLoader.loadConfig({
-	username: {
-		default: "bob", // A config with a default value can't be required
-	},
-	username2: "anotherDefaultFormat",
-	secure: {
-		required: true,
-		error: "Missing required config value: secure" // This default message will be printed if you put error: true. This can only be used on required keys
-	},
-	anotherConfigKey: {
-		error: true
-	},
-	finalConfigKey: {} // This config value will not be required and might not be in the object returned
+  username: {
+    default: "bob", // A config with a default value can't be required
+  },
+  username2: "anotherDefaultFormat",
+  secure: {
+    required: true,
+    error: "Missing required config value: secure" // This default message will be printed if you do not supply your own. This can only be used if the config has a validation, such as required.
+  },
+  anotherConfigKey: {
+    error: true
+  },
+  finalConfigKey: {} // This config value will not be required and might not be in the object returned
 }, {
-	configFolders: ['/etc/myconf'],                       // Optional, defaults to working directory and then process base directory
-	filePrefix: 'part-before-the-dot',                    // Optional, defaults to config
-	order: ["string", "environment", "json", "yaml", "defaults"], // Optional, defaults to the value shown left; earlier values will override later values
-	                                                      // other options include "js" to load from a .js file
-	configString: '{"key": "value"}',                     // The 'string' source above.
+  configFolders: ['/etc/myconf'],                       // Optional, defaults to working directory and then process base directory
+  filePrefix: 'part-before-the-dot',                    // Optional, defaults to config
+  order: ["string", "environment", "json", "yaml", "defaults"], // Optional, defaults to the value shown left; earlier values will override later values
+                                                        // other options include "js" to load from a .js file
+  configString: '{"key": "value"}',                     // The 'string' source above.
 }, function(err, config) {
-	console.log("Config loaded: " + config);
+  console.log("Config loaded: " + config);
+});
+
+// Alternately, promise style
+configLoader.loadConfig({username: {default: "bob"}, {jsonData: '{"username":"bill"}'})
+.then(function(config) {
+  console.log(Config loaded: " + config);
+})
+.error(function(err) {
+  console.log("Failed to load config: " + err);
 });
 ```
 

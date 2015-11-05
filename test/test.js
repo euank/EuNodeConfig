@@ -7,9 +7,9 @@ var configLoader = require('../index.js');
 describe("config", function() {
 	beforeEach(function(done) {
 		Object.keys(process.env).forEach(function(x) {
-			delete process.env[x]
+			delete process.env[x];
 		});
-		done()
+		done();
 	});
 
 	it("Should load config.json from example 1", function(done) {
@@ -99,4 +99,35 @@ describe("config", function() {
 			done();
 		});
 	});
-})
+
+  it('should support jsonData', function(done) {
+    configLoader.loadConfig({username: "foo"}, {jsonData: '{"username":"bob"}'})
+    .then(function(config) {
+      expect(config).to.eql({username: "bob"});
+      done();
+    }).fail(function(err) {
+      done(err);
+    });
+  });
+
+  it('should support required', function(done) {
+    configLoader.loadConfig({username: {required: true}}, {jsonData: '{}'})
+    .then(function(config) {
+      done(new Error("required, should fail"));
+    }).fail(function(err) {
+      expect(err).to.match(/Missing required config value: username/);
+      done();
+    });
+  });
+
+
+  it('should support custom required errors', function(done) {
+    configLoader.loadConfig({username: {required: true, error: "help"}}, {jsonData: '{}'})
+    .then(function(config) {
+      done(new Error("required, should fail"));
+    }).fail(function(err) {
+      expect(err).to.match(/help/);
+      done();
+    });
+  });
+});
