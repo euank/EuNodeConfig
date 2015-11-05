@@ -1,5 +1,5 @@
 {
-  "name": "EuNodeConfig",
+  "name": "eu-node-config",
   "version": "0.0.3",
   "description": "A simple config file loader",
   "main": "index.js",
