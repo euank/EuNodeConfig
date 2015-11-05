@@ -1,6 +1,6 @@
 {
   "name": "EuNodeConfig",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A simple config file loader",
   "main": "index.js",
   "directories": {

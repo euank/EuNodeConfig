@@ -39,13 +39,15 @@ configLoader.loadConfig({
 
 ## Formats supported
 
+### .yaml, .json, and .js
 From the above description, your config will be loaded from a file if it begins
 with your filePrefix (default config) and ends with ".json" or ".yaml". If you
 enable "loadJsConfigs" it will also load .js extension files.
 
+### Environment variables
 Environment variables matching either your config key or your config key
 converted to upper-case and with camelcasing normalized to underscore
-seperation.
+seperation will be used.
 
 For example, the config key "configKey" will be accessed as either the
 environment variable "configKey" or "CONFIG\_KEY"
